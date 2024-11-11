@@ -19,14 +19,14 @@
 # <pep8 compliant>
 
 bl_info = {
-    "name": "SnappyHexMesh GUI",
-    "author": "Tuomo Keskitalo",
+    "name": "SnappyHexMesh GUI, LSM modification",
+    "author": "Tuomo Keskitalo, LourencoSM modification",
     "version": (1, 8),
     "blender": (2, 80, 0),
-    "location": "3D View > SnappyHexMesh GUI",
+    "location": "3D View > SHM lsm", #"location": "3D View > SnappyHexMesh GUI",
     "description": "GUI for OpenFOAM SnappyHexMesh volume mesh generation tool",
-    "wiki_url": "https://github.com/tkeskita/snappyhexmesh_gui",
-    "tracker_url": "https://github.com/tkeskita/snappyhexmesh_gui/issues",
+    "wiki_url": "https://github.com/lourencosm/snappyhexmesh_gui_lsm",
+    "tracker_url": "https://github.com/lourencosm/snappyhexmesh_gui_lsm/issues",
     "support": 'COMMUNITY',
     "category": "Object",
     }
@@ -57,6 +57,15 @@ class SnappyHexMeshGUI_Settings(bpy.types.PropertyGroup):
             ('openfoam.org', 'openfoam.org', 'openfoam.org', 0),
             ('openfoam.com', 'openfoam.com', 'openfoam.com', 1)},
         default='openfoam.com',
+    )
+    # LSM modification: optional sufix for *Dict files
+    optional_dict_sufix: bpy.props.EnumProperty(
+        name="Dict files sufix",
+        description="Optional sufix for *Dict files to avoid overwriting",
+        items={
+            ('no', 'no', 'no', 0),
+            ('yes', 'yes', 'yes', 1)},
+        default='yes',
     )
     snappy_template_path: bpy.props.StringProperty(
         name="Template Path",
@@ -372,10 +381,10 @@ bpy.types.Object.shmg_obj_surface_layer_minimum_thickness = bpy.props.FloatPrope
 
 class SnappyHexMeshGUI_ToolBar:
     """Base Class for Add-on Tool Bar"""
-    bl_label = "SnappyHexMesh GUI"
+    bl_label = "SHM lsm" #"SnappyHexMesh GUI"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = "SnappyHexMesh GUI"
+    bl_category = "SHM lsm" #"SnappyHexMesh GUI"
 
     
 class VIEW3D_PT_SnappyHexMeshGUI_Edit(bpy.types.Panel, SnappyHexMeshGUI_ToolBar):
@@ -439,6 +448,9 @@ class VIEW3D_PT_SnappyHexMeshGUI_Object(bpy.types.Panel, SnappyHexMeshGUI_ToolBa
 
         rowsub = col.row()
         rowsub.prop(gui, "openfoam_framework")
+
+        rowsub = col.row()
+        rowsub.prop(gui, "optional_dict_sufix")
 
         rowsub = col.row()
         rowsub.prop(gui, "export_scale")

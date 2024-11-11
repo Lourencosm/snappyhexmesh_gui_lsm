@@ -66,14 +66,20 @@ class OBJECT_OT_snappyhexmeshgui_export(bpy.types.Operator):
         createbafflesdictData = export_createbafflesdict_replacements(createbafflesdictData)
         meshqualitydictData = export_meshqualitydict_replacements(meshqualitydictData)
 
+        # LSM: add a suffix to the *Dict files to avoid overwriting
+        if gui.optional_dict_sufix == 'yes':
+            SHMG_sufix = '.shmg'
+        else:
+            SHMG_sufix = ''
+
         # Write surfaceFeaturesDict
         # openfoam.org uses surfaceFeaturesDict, openfoam.com surfaceFeatureExtract
         if framework == 'openfoam.org':
             outfilename = os.path.join(bpy.path.abspath(export_path), \
-                                       'system', 'surfaceFeaturesDict')
+                                       'system', 'surfaceFeaturesDict' + SHMG_sufix)
         elif framework == 'openfoam.com':
             outfilename = os.path.join(bpy.path.abspath(export_path), \
-                                       'system', 'surfaceFeatureExtractDict')
+                                       'system', 'surfaceFeatureExtractDict' + SHMG_sufix)
         else:
             raise Exception("unknown OpenFOAM framework" + framework)
 
@@ -84,7 +90,7 @@ class OBJECT_OT_snappyhexmeshgui_export(bpy.types.Operator):
         # Write blockMeshDict
         if gui.do_block_mesh:
             outfilename = os.path.join(bpy.path.abspath(export_path), \
-                          'system', 'blockMeshDict')
+                          'system', 'blockMeshDict' + SHMG_sufix)
             outfile = open(outfilename, 'w')
             outfile.write(''.join(blockData))
             outfile.close()
@@ -102,7 +108,7 @@ class OBJECT_OT_snappyhexmeshgui_export(bpy.types.Operator):
                             + " because it is not visible")
                 return {'FINISHED'}
 
-            snappy_filename = 'snappyHexMeshDict'
+            snappy_filename = 'snappyHexMeshDict' + SHMG_sufix
             if i > 1:
                 snappy_filename += str(i)
             outfilename = os.path.join(bpy.path.abspath(export_path), \
@@ -113,21 +119,21 @@ class OBJECT_OT_snappyhexmeshgui_export(bpy.types.Operator):
 
         # Write decomposeParDict
         outfilename = os.path.join(bpy.path.abspath(export_path), \
-                                   'system', 'decomposeParDict')
+                                   'system', 'decomposeParDict' + SHMG_sufix)
         outfile = open(outfilename, 'w')
         outfile.write(''.join(decomposepardictData))
         outfile.close()
 
         # Write createBafflesDict
         outfilename = os.path.join(bpy.path.abspath(export_path), \
-                                   'system', 'createBafflesDict')
+                                   'system', 'createBafflesDict' + SHMG_sufix)
         outfile = open(outfilename, 'w')
         outfile.write(''.join(createbafflesdictData))
         outfile.close()
 
         # Write meshQualityDict
         outfilename = os.path.join(bpy.path.abspath(export_path), \
-                                   'system', 'meshQualityDict')
+                                   'system', 'meshQualityDict' + SHMG_sufix)
         outfile = open(outfilename, 'w')
         outfile.write(''.join(meshqualitydictData))
         outfile.close()
@@ -921,6 +927,16 @@ class OBJECT_OT_snappyhexmeshgui_clean_case_dir(bpy.types.Operator):
         deleted_names = clean_case_dir()
         self.report({'INFO'}, "Deleted: " + deleted_names)
         return {'FINISHED'}
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, title="WARNING!!! Really clean the OpenFOAM folder?", confirm_text="DELETE !!", cancel_default=True)
+
+    def draw(self, context):
+        row = self.layout
+        # row.label(text="Clean the OpenFOAM folder?")
+        row.label(text="This will delete:")
+        row.label(text="        - folders: 1-9, constant, system, processor*")
+        row.label(text="        - files: log.*, run")
 
 def clean_case_dir():
     """Removes OpenFOAM directories (if they exist) from blend file save
